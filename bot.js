@@ -57,7 +57,13 @@ client.once(Events.ClientReady, async clientUser => {
     new SlashCommandBuilder()
   .setName("nextmatch")
   .setDescription("View your next scheduled league match")
-  .toJSON()
+  .toJSON(),
+
+
+new SlashCommandBuilder()
+  .setName("mystats")
+  .setDescription("View your Clashers Arena stats")
+  .toJSON(),
 
   ];
 
@@ -88,7 +94,7 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 
   // /verify
-  if (interaction.commandName === "verify") {
+  else if (interaction.commandName === "verify") {
     const code = interaction.options.getString("code");
     const discordId = interaction.user.id;
 
@@ -137,7 +143,7 @@ if (data.success) {
   }
 
 ///////////
-if (interaction.commandName === "nextmatch") {
+else if (interaction.commandName === "nextmatch") {
   const discordId = interaction.user.id;
 
   try {
@@ -176,6 +182,47 @@ if (interaction.commandName === "nextmatch") {
     console.error(err);
     await interaction.reply({
       content: "❌ Unable to fetch your next match.",
+      ephemeral: true
+    });
+  }
+}
+else if (interaction.commandName === "mystats") {
+  const discordId = interaction.user.id;
+
+  try {
+    const res = await fetch("https://theclashersarena.com/api/discord_mystats.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": process.env.WEBHOOK_SECRET
+      },
+      body: JSON.stringify({ discord_id: discordId })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      await interaction.reply({
+        content: "❌ Stats not available. Make sure your account is linked.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    await interaction.reply({
+      content:
+        "📊 **Your Clashers Arena Stats**\n\n" +
+        `👤 **${data.username}**\n` +
+        `🏆 Record: **${data.wins}–${data.losses}**\n` +
+        `🔥 Win %: **${data.win_pct}%**\n` +
+        `👑 Avg Crowns/Game: **${data.avg_crowns}**`,
+      ephemeral: true
+    });
+
+  } catch (err) {
+    console.error(err);
+    await interaction.reply({
+      content: "❌ Unable to load stats right now.",
       ephemeral: true
     });
   }
