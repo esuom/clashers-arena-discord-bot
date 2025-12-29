@@ -157,11 +157,5 @@ app.listen(PORT, () => {
   console.log(`📬 DM webhook listening on port ${PORT}`);
 });
 
-console.log(
-  "TOKEN CHECK:",
-  typeof process.env.DISCORD_TOKEN,
-  process.env.DISCORD_TOKEN?.length
-);
-
 client.login(process.env.DISCORD_TOKEN);
 
