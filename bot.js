@@ -187,6 +187,7 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
+// DM endpoint
 app.post("/dm", async (req, res) => {
   if (req.headers.authorization !== process.env.WEBHOOK_SECRET) {
     return res.status(403).send("Forbidden");
@@ -203,6 +204,47 @@ app.post("/dm", async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
+// RESULT POSTING endpoint
+app.post("/post-result", async (req, res) => {
+  if (req.headers.authorization !== process.env.WEBHOOK_SECRET) {
+    return res.status(403).send("Forbidden");
+  }
+
+  const {
+    match_id,
+    channel_id,
+    winner,
+    loser,
+    score,
+    crowns,
+    is_playoff
+  } = req.body;
+
+  const matchUrl = `https://theclashersarena.com/index.php?page=match_details&id=${match_id}`;
+
+  try {
+    const channel = await client.channels.fetch(channel_id);
+    if (!channel) {
+      return res.status(404).json({ error: "Channel not found" });
+    }
+
+    const message =
+      `🏆 **Match Result** ${is_playoff ? "🔥 *Playoffs*" : ""}\n\n` +
+      `**${winner}** defeated **${loser}**\n` +
+      `📊 Score: **${score}**\n` +
+      `👑 Crowns: **${crowns}**\n\n` +
+      `🔗 **View match details:**\n${matchUrl}`;
+
+    await channel.send(message);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Result post failed:", err);
+    res.status(500).json({ success: false });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
