@@ -52,7 +52,7 @@ client.once(Events.ClientReady, async clientUser => {
           .setDescription("Your 6-digit verification code")
           .setRequired(true)
       )
-      .toJSON()
+      .toJSON(),
       
     new SlashCommandBuilder()
   .setName("nextmatch")
