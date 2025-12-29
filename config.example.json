@@ -1,0 +1,5 @@
+{
+  "BOT_TOKEN": "YOUR_DISCORD_BOT_TOKEN",
+  "CLIENT_ID": "YOUR_APPLICATION_CLIENT_ID",
+  "CMS_WEBHOOK_URL": "https://your-cms.example.com/webhook.php"
+}

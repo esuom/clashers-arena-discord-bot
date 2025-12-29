@@ -1,0 +1,16 @@
+{
+  "name": "clashers-arena-discord-bot",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "type": "commonjs",
+  "description": "Discord Bot - Clashers Arena League",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.2.3",
+    "node-fetch": "^2.6.7"
+  },
+  "license": "ISC"
+}
