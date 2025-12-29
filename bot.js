@@ -202,12 +202,15 @@ else if (interaction.commandName === "mystats") {
     const data = await res.json();
 
     if (!data.success) {
-      await interaction.reply({
-        content: "❌ Stats not available. Make sure your account is linked.",
-        ephemeral: true
-      });
-      return;
-    }
+  const msg =
+    data.reason === "no_active_season"
+      ? "🕒 The season hasn’t started yet. Stats will appear once the season begins."
+      : "❌ Stats not available. Make sure your account is linked.";
+
+  await interaction.reply({ content: msg, ephemeral: true });
+  return;
+}
+
 
     await interaction.reply({
       content:
