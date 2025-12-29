@@ -53,6 +53,12 @@ client.once(Events.ClientReady, async clientUser => {
           .setRequired(true)
       )
       .toJSON()
+      
+    new SlashCommandBuilder()
+  .setName("nextmatch")
+  .setDescription("View your next scheduled league match")
+  .toJSON()
+
   ];
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
@@ -129,6 +135,52 @@ if (data.success) {
       });
     }
   }
+
+///////////
+if (interaction.commandName === "nextmatch") {
+  const discordId = interaction.user.id;
+
+  try {
+    const res = await fetch("https://theclashersarena.com/api/discord_nextmatch.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": process.env.WEBHOOK_SECRET
+      },
+      body: JSON.stringify({ discord_id: discordId })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      await interaction.reply({
+        content: "📭 You have no upcoming scheduled matches.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    const match = data.match;
+    const time = new Date(match.scheduled_for).toLocaleString();
+
+    await interaction.reply({
+      content:
+        "🏟️ **Your Next Match**\n\n" +
+        `**${match.player_a} vs ${match.player_b}**\n` +
+        `🕒 **${time}**\n\n` +
+        "Good luck! 🔥",
+      ephemeral: true
+    });
+
+  } catch (err) {
+    console.error(err);
+    await interaction.reply({
+      content: "❌ Unable to fetch your next match.",
+      ephemeral: true
+    });
+  }
+}
+
 });
 
 const express = require("express");
