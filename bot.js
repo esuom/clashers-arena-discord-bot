@@ -200,6 +200,17 @@ else if (interaction.commandName === "mystats") {
     });
 
     const data = await res.json();
+    let data;
+try {
+  data = await res.json();
+} catch (e) {
+  console.error("Invalid JSON from /mystats");
+  await interaction.reply({
+    content: "❌ Stats service error. Please try again later.",
+    ephemeral: true
+  });
+  return;
+}
 
     if (!data.success) {
   const msg =
@@ -271,7 +282,7 @@ app.post("/post-result", async (req, res) => {
     is_playoff
   } = req.body;
 
-  const matchUrl = `https://theclashersarena.com/index.php?page=match_details&id=${match_id}`;
+  const matchUrl = `https://theclashersarena.com/index.php?page=match_details&match_id=${match_id}`;
 
   try {
     const channel = await client.channels.fetch(channel_id);
