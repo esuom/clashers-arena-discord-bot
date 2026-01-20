@@ -15,7 +15,9 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers   // ← REQUIRED
   ]
-});async function assignVerifiedRole(interaction) {
+});
+
+async function assignVerifiedRole(interaction) {
   const roleName = "Clashers Arena Verified";
   const guild = interaction.guild;
 
@@ -28,10 +30,27 @@ const client = new Client({
   }
 
   const member = await guild.members.fetch(interaction.user.id);
+
+  // Assign role
   if (!member.roles.cache.has(role.id)) {
     await member.roles.add(role);
   }
+
+  // Auto-set nickname (safe)
+  try {
+    const baseName = member.user.username;
+    const newNick = `${baseName} | Verified`;
+
+    // Only set if different (avoid spam edits)
+    if (member.nickname !== newNick) {
+      await member.setNickname(newNick);
+    }
+  } catch (err) {
+    // Nickname failure should NEVER break verification
+    console.warn("Nickname set failed:", err.message);
+  }
 }
+
 
 // READY
 client.once(Events.ClientReady, async clientUser => {
@@ -199,8 +218,7 @@ else if (interaction.commandName === "mystats") {
       body: JSON.stringify({ discord_id: discordId })
     });
 
-    const data = await res.json();
-    let data;
+   let data;
 try {
   data = await res.json();
 } catch (e) {
@@ -211,6 +229,7 @@ try {
   });
   return;
 }
+
 
     if (!data.success) {
   const msg =
