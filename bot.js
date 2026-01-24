@@ -17,17 +17,13 @@ const client = new Client({
   ]
 });
 
-async function assignVerifiedRole(interaction) {
+async function assignVerifiedRole(interaction, caUsername) {
   const roleName = "Clashers Arena Verified";
   const guild = interaction.guild;
-
   if (!guild) return;
 
   const role = guild.roles.cache.find(r => r.name === roleName);
-  if (!role) {
-    console.error(`❌ Role not found: ${roleName}`);
-    return;
-  }
+  if (!role) return;
 
   const member = await guild.members.fetch(interaction.user.id);
 
@@ -36,17 +32,14 @@ async function assignVerifiedRole(interaction) {
     await member.roles.add(role);
   }
 
-  // Auto-set nickname (safe)
+  // Set nickname from Clashers Arena
   try {
-    const baseName = member.user.username;
-    const newNick = `${baseName} | Verified`;
+    const newNick = `${caUsername}`;
 
-    // Only set if different (avoid spam edits)
     if (member.nickname !== newNick) {
       await member.setNickname(newNick);
     }
   } catch (err) {
-    // Nickname failure should NEVER break verification
     console.warn("Nickname set failed:", err.message);
   }
 }
@@ -134,7 +127,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 if (data.success) {
   try {
-    await assignVerifiedRole(interaction);
+    await assignVerifiedRole(interaction, data.username);
   } catch (roleErr) {
     console.error("Role assignment failed:", roleErr);
     // verification already succeeded — do not fail user
