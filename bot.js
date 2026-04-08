@@ -5,7 +5,11 @@ const {
   Events, 
   REST, 
   Routes, 
-  SlashCommandBuilder 
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
 } = require("discord.js");
 
 const fetch = require("node-fetch");
@@ -345,24 +349,40 @@ app.post("/post-replay", async (req, res) => {
       return res.status(404).json({ error: "Channel not found" });
     }
 
-    const title = is_playoff
-      ? "🎬 **Playoff Replay Uploaded**"
-      : "🎬 **Replay Uploaded**";
+    const title = is_playoff ? "🎬 Playoff Replay Uploaded" : "🎬 Replay Uploaded";
 
     const matchup =
       winner && loser
-        ? `**${winner}** vs **${loser}**`
-        : `**${player_a}** vs **${player_b}**`;
+        ? `${winner} vs ${loser}`
+        : `${player_a} vs ${player_b}`;
 
-    const message =
-      `${title}\n\n` +
-      `${matchup}\n` +
-      `📊 Score: **${score}**\n` +
-      `👑 Crowns: **${crowns}**\n\n` +
-      `▶️ **Watch replay:**\n${replay_url}\n\n` +
-      `🔗 **View match details:**\n${matchUrl}`;
+    const embed = new EmbedBuilder()
+      .setTitle(title)
+      .setDescription(`**${matchup}**`)
+      .addFields(
+        { name: "Score", value: score || "N/A", inline: true },
+        { name: "Crowns", value: crowns || "N/A", inline: true },
+        { name: "Match ID", value: String(match_id), inline: true }
+      )
+      .setColor(is_playoff ? 0xff3b30 : 0x5865f2)
+      .setFooter({ text: "Clashers Arena" })
+      .setTimestamp();
 
-    await channel.send(message);
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel("Watch Replay")
+        .setStyle(ButtonStyle.Link)
+        .setURL(replay_url),
+      new ButtonBuilder()
+        .setLabel("Match Details")
+        .setStyle(ButtonStyle.Link)
+        .setURL(matchUrl)
+    );
+
+    await channel.send({
+      embeds: [embed],
+      components: [row]
+    });
 
     res.json({ success: true });
   } catch (err) {
