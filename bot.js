@@ -318,6 +318,59 @@ app.post("/post-result", async (req, res) => {
   }
 });
 
+// REPLAY POSTING endpoint
+app.post("/post-replay", async (req, res) => {
+  if (req.headers.authorization !== process.env.WEBHOOK_SECRET) {
+    return res.status(403).send("Forbidden");
+  }
+
+  const {
+    match_id,
+    channel_id,
+    player_a,
+    player_b,
+    winner,
+    loser,
+    score,
+    crowns,
+    replay_url,
+    is_playoff
+  } = req.body;
+
+  const matchUrl = `https://theclashersarena.com/index.php?page=match_details&match_id=${match_id}`;
+
+  try {
+    const channel = await client.channels.fetch(channel_id);
+    if (!channel) {
+      return res.status(404).json({ error: "Channel not found" });
+    }
+
+    const title = is_playoff
+      ? "🎬 **Playoff Replay Uploaded**"
+      : "🎬 **Replay Uploaded**";
+
+    const matchup =
+      winner && loser
+        ? `**${winner}** vs **${loser}**`
+        : `**${player_a}** vs **${player_b}**`;
+
+    const message =
+      `${title}\n\n` +
+      `${matchup}\n` +
+      `📊 Score: **${score}**\n` +
+      `👑 Crowns: **${crowns}**\n\n` +
+      `▶️ **Watch replay:**\n${replay_url}\n\n` +
+      `🔗 **View match details:**\n${matchUrl}`;
+
+    await channel.send(message);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Replay post failed:", err);
+    res.status(500).json({ success: false });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
